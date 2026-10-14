@@ -243,3 +243,11 @@ gh run view <run_id> --log-failed
 - 自动 tag 默认不触发，只有 commit title 包含 `#patch`、`#minor`、`#major` 才会触发版本号更新。
 - 手动打 tag 必须使用 annotated tag。
 - 用户可见变更优先通过 PR 合入，并补齐 label 与验证说明。
+
+## Cursor Cloud specific instructions
+
+- 默认 Cloud Agent 镜像使用 Python 3.12 与 Node.js 22。`install` 安装 `python3-venv`、编译工具和 `wkhtmltopdf`，在仓库根目录创建 `.venv` 并安装 `requirements-ci.txt`，再对 `apps/dsa-web` 执行 `npm ci`。
+- `start` 用 tmux 会话 `api` 与 `web` 启动 API 和 Vite。端口与代理以 `server.py` 和 `apps/dsa-web/vite.config.ts` 为准。
+- 不要在 `install` 或 `start` 中复制或改写 `.env`。仓库里如果已经有 `.env`，其中的 `RUN_IMMEDIATELY`、`SCHEDULE_RUN_IMMEDIATELY` 和通知渠道配置会让 `./scripts/ci_gate.sh` 的 `test_notification`、`tests/test_config_env_compat.py`、`tests/test_main_schedule_mode.py` 失败。跑这组离线测试时先把 `.env` 移开，测完再放回，不要把这个临时移动提交进 git。
+- 没有可用 LLM 配置时，健康检查、持仓录入和离线测试仍然可以运行。完整个股分析至少需要一个模型渠道。
+- 后端验证先把 `.venv/bin` 放到 `PATH` 前面，再执行 `./scripts/ci_gate.sh`。桌面端 Electron 不在默认环境安装范围内。
